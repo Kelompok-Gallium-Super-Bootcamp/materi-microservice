@@ -12,7 +12,7 @@ trBroker.createService({
   mixins: [DbService],
 
   settings: {
-    fields: ["_id", "to", "from", "value"],
+    fields: ["_id", "to", "from", "value", "senderId", "receiverId"],
    },
 
   actions: {
@@ -30,6 +30,10 @@ trBroker.createService({
     createTransaction: {
     	async handler(ctx) {
 				try{
+          const sender = await this.broker.call("users.find", {query :{"name" : ctx.params.from }})
+          const receiver = await this.broker.call("users.find",{query :{"name" : ctx.params.to }})  
+          ctx.params.senderId =   sender[0]._id      
+          ctx.params.receiverId = receiver[0]._id
 					const response = await this.broker.call("transactions.create", ctx.params);
 					const log = await this.broker.call("logger.createLog", {action: "create transaction"});
 					return response;
